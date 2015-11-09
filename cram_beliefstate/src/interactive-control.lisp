@@ -37,53 +37,53 @@
   (let* ((desig (setf (cpl:value *interactive-callback-fluent*)
                       (designator-integration-lisp::msg->designator
                        msg)))
-         (callback (cdr (find (desig-prop-value desig 'desig-props::command)
+         (callback (cdr (find (desig-prop-value desig :command)
                               *registered-interactive-callbacks*
                               :test (lambda (x y)
                                       (string= x (car y)))))))
     (when callback
       (funcall callback
-               (desig-prop-value desig 'desig-props::command)
-               (desig-prop-value desig 'desig-props::object)
-               (desig-prop-value desig 'desig-props::parameter)))))
+               (desig-prop-value desig :command)
+               (desig-prop-value desig :object)
+               (desig-prop-value desig :parameter)))))
 
 (roslisp-utilities:register-ros-init-function init-interactive-control)
 
 (defun register-interactive-object (name shape pose dimensions menu)
   (alter-node
    (cram-designators:make-designator
-    'cram-designators:action
-    (list (list 'command 'register-interactive-object)
-          (list 'name name)
-          (list 'shape shape)
-          (list 'pose pose)
-          (list 'width (elt dimensions 0))
-          (list 'depth (elt dimensions 1))
-          (list 'height (elt dimensions 2))
-          (list 'menu menu)))))
+    :action
+    (list (list :command :register-interactive-object)
+          (list :name name)
+          (list :shape shape)
+          (list :pose pose)
+          (list :width (elt dimensions 0))
+          (list :depth (elt dimensions 1))
+          (list :height (elt dimensions 2))
+          (list :menu menu)))))
 
 (defun unregister-interactive-object (name)
   (alter-node
    (cram-designators:make-designator
-    'cram-designators:action
-    (list (list 'command 'unregister-interactive-object)
-          (list 'name name)))))
+    :action
+    (list (list :command :unregister-interactive-object)
+          (list :name name)))))
 
 (defun set-interactive-object-menu (name menu)
   (alter-node
    (cram-designators:make-designator
-    'cram-designators:action
-    (list (list 'command 'set-interactive-object-menu)
-          (list 'name name)
-          (list 'menu menu)))))
+    :action
+    (list (list :command :set-interactive-object-menu)
+          (list :name name)
+          (list :menu menu)))))
 
 (defun set-interactive-object-pose (name pose)
   (alter-node
    (cram-designators:make-designator
-    'cram-designators:action
-    (list (list 'command 'set-interactive-object-pose)
-          (list 'name name)
-          (list 'pose pose)))))
+    :action
+    (list (list :command :set-interactive-object-pose)
+          (list :name name)
+          (list :pose pose)))))
 
 (defun register-interactive-callback (command callback-function)
   "Callback functions need to receive two parameters: one for the

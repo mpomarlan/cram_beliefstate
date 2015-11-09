@@ -47,7 +47,6 @@
   (if use-roslisp-ns
       (setq *planlogging-namespace* (concatenate 'string roslisp::*namespace* (string-left-trim "/" namespace)))
       (setq *planlogging-namespace* (concatenate 'string "/" (string-left-trim "/" namespace)))))
-      
 
 (defun fully-qualified-service-name (service-name)
   (concatenate 'string *planlogging-namespace* "/" service-name))
@@ -81,18 +80,16 @@
     (when (wait-for-logging "operate")
       (let* ((parameters
                (mapcar (lambda (x) x)
-                       (append (list (list '_cb_type 'begin)
-                                     (list '_name name)
-                                     (list '_detail-level detail-level)
-                                     (list '_source 'cram)
+                       (append (list (list :_cb_type :begin)
+                                     (list :_name name)
+                                     (list :_detail-level detail-level)
+                                     (list :_source :cram)
                                      log-parameters))))
              (result (first (designator-integration-lisp:call-designator-service
                              (fully-qualified-service-name "operate")
-                             (cram-designators:make-designator
-                              'cram-designators:action
-                              parameters)))))
+                             (cram-designators:make-designator :action parameters)))))
         (when result
-          (desig-prop-value result 'desig-props::_id))))))
+          (desig-prop-value result :_id))))))
 
 (defun stop-node (id &key (success t))
   (with-lock-held (*service-access*)
@@ -100,10 +97,10 @@
       (designator-integration-lisp:call-designator-service
        (fully-qualified-service-name "operate")
        (cram-designators:make-designator
-        'cram-designators:action
-        (list (list '_cb_type 'end)
-              (list '_id id)
-              (list '_success (cond (success 1)
+        :action
+        (list (list :_cb_type :end)
+              (list :_id id)
+              (list :_success (cond (success 1)
                                     (t 0)))))))))
 
 (defun extract-dot-file (filename &key
@@ -132,32 +129,32 @@
                                        (fails t)
                                        (max-detail-level 99))
   (alter-node
-   (list (list 'command 'export-planlog)
-         (list 'format format)
-         (list 'filename filename)
-         (list 'show-successes (cond (successes 1)
+   (list (list :command :export-planlog)
+         (list :format format)
+         (list :filename filename)
+         (list :show-successes (cond (successes 1)
                                      (t 0)))
-         (list 'show-fails (cond (fails 1)
+         (list :show-fails (cond (fails 1)
                                  (t 0)))
-         (list 'max-detail-level max-detail-level))))
+         (list :max-detail-level max-detail-level))))
 
 (defmethod alter-node ((description list) &key node-id (mode :alter) (command "")
                                             (assurance-token ""))
   (with-lock-held (*service-access*)
     (when (wait-for-logging "operate")
-      (let ((description (cond (node-id (append description `((_relative_context_id ,node-id))))
+      (let ((description (cond (node-id (append description `((:_relative_context_id ,node-id))))
                                (t description))))
         (designator-integration-lisp:call-designator-service
          (fully-qualified-service-name "operate")
-         (make-designator 'action
+         (make-designator :action
                           (append
                            description
                            (cond ((eql mode :service)
-                                  `((command ,command))))
+                                  `((:command ,command))))
                            (cond ((not (string= assurance-token ""))
-                                  `((_assurance_token ,assurance-token))))
-                           `((_cb_type alter))
-                           `((_type ,(case mode
+                                  `((:_assurance_token ,assurance-token))))
+                           `((:_cb_type alter))
+                           `((:_type ,(case mode
                                        (:alter "alter")
                                        (:service "service")))))))))))
 
@@ -167,20 +164,20 @@
       (designator-integration-lisp:call-designator-service
        service
        (cram-designators:make-designator
-        'cram-designators:action
-        (list (list 'command 'start-new-experiment)))))))
+        :action
+        (list (list :command :start-new-experiment)))))))
 
 (defun add-object (designator &key (path-to-cad-model "") (annotation ""))
   (let* ((memory-address (write-to-string
                           (sb-kernel:get-lisp-obj-address designator)))
          (description (description designator)))
     (alter-node
-     (list (list 'command 'add-object)
-           (list 'type "OBJECT")
-           (list 'path-to-cad-model path-to-cad-model)
-           (list 'annotation annotation)
-           (list 'memory-address memory-address)
-           (list 'description description)))))
+     (list (list :command :add-object)
+           (list :type "OBJECT")
+           (list :path-to-cad-model path-to-cad-model)
+           (list :annotation annotation)
+           (list :memory-address memory-address)
+           (list :description description)))))
 
 (defun add-object-to-active-node (designator &key (path-to-cad-model "") (annotation ""))
   (let ((result (add-object
@@ -191,7 +188,7 @@
       (add-designator-to-active-node
        result
        :annotation annotation)
-      (desig-prop-value (first result) 'desig-props::id))))
+      (desig-prop-value (first result) :id))))
 
 (defun add-object-to-node (designator id &key (path-to-cad-model "") (annotation ""))
   (let ((result (add-object
@@ -200,33 +197,33 @@
                  :annotation annotation)))
     (when result
       (add-designator-to-node designator id :annotation annotation)
-      (desig-prop-value (first result) 'desig-props::id))))
+      (desig-prop-value (first result) :id))))
 
 (defun catch-current-failure-with-active-node (id)
-  (alter-node (list (list 'command 'catch-failure)
-                    (list 'context-id id))))
+  (alter-node (list (list :command :catch-failure)
+                    (list :context-id id))))
 
 (defun rethrow-current-failure-with-active-node (id)
-  (alter-node (list (list 'command 'rethrow-failure)
-                    (list 'context-id id))))
+  (alter-node (list (list :command :rethrow-failure)
+                    (list :context-id id))))
 
 (defun set-experiment-meta-data (field value)
   (alter-node
-   `((command set-experiment-meta-data)
-     (field ,field)
-     (value ,value))))
+   `((:command :set-experiment-meta-data)
+     (:field ,field)
+     (:value ,value))))
 
 (defun add-topic-image-to-active-node (image-topic)
   (alter-node
-   (list (list 'command 'add-image)
-         (list 'origin image-topic))))
+   (list (list :command :add-image)
+         (list :origin image-topic))))
 
 (defun add-failure-to-active-node (datum)
   (let ((datum-str (cond (datum (write-to-string datum))
                         (t "ANONYMOUS-FAILURE"))))
     (alter-node
-     (list (list 'command 'add-failure)
-           (list 'condition datum-str)))))
+     (list (list :command :add-failure)
+           (list :condition datum-str)))))
 
 (defun add-designator-to-node (designator node-id &key (annotation ""))
   (let* ((type (ecase (type-of designator)
@@ -238,14 +235,14 @@
                           (sb-kernel:get-lisp-obj-address designator)))
          (description (description designator))
          (result (alter-node
-                  (list (list 'command 'add-designator)
-                        (list 'type type)
-                        (list 'annotation annotation)
-                        (list 'memory-address memory-address)
-                        (list 'description description))
+                  (list (list :command :add-designator)
+                        (list :type type)
+                        (list :annotation annotation)
+                        (list :memory-address memory-address)
+                        (list :description description))
                   :node-id node-id)))
     (when result
-      (let* ((desig-id (desig-prop-value (first result) 'desig-props::id)))
+      (let* ((desig-id (desig-prop-value (first result) :id)))
         desig-id))))
 
 (defun add-designator-to-active-node (designator &key (annotation "")
@@ -260,15 +257,15 @@
          (description (description designator))
          (result (alter-node
                   (append
-                   (list (list 'command 'add-designator)
-                         (list 'type type)
-                         (list 'annotation annotation)
-                         (list 'memory-address memory-address)
-                         (list 'description description))
+                   (list (list :command :add-designator)
+                         (list :type type)
+                         (list :annotation annotation)
+                         (list :memory-address memory-address)
+                         (list :description description))
                    (when property-namespace
-                     (list (list 'namespace property-namespace)))))))
+                     (list (list :namespace property-namespace)))))))
     (when result
-      (let* ((desig-id (desig-prop-value (first result) 'desig-props::id)))
+      (let* ((desig-id (desig-prop-value (first result) :id)))
         desig-id))))
 
 (defun set-metadata (&key (robot "PR2") (creator "IAI") experiment description (cram-semrec-version "0.4"))
@@ -296,13 +293,13 @@
                         (cram-designators:human-designator "HUMAN")
                         (cram-designators:object-designator "OBJECT"))))
     (alter-node
-     `((command equate-designators)
-       (memory-address-child ,mem-addr-child)
-       (type-child ,type-child)
-       (description-child ,desc-child)
-       (memory-address-parent ,mem-addr-parent)
-       (type-parent ,type-parent)
-       (description-parent ,desc-parent)))))
+     `((:command :equate-designators)
+       (:memory-address-child ,mem-addr-child)
+       (:type-child ,type-child)
+       (:description-child ,desc-child)
+       (:memory-address-parent ,mem-addr-parent)
+       (:type-parent ,type-parent)
+       (:description-parent ,desc-parent)))))
 
 (defun extract-files (&key (name "cram_log") detail-level)
   (extract-meta-file)
@@ -321,9 +318,9 @@
   (extract-files :name name))
 
 (defun begin-experiment ()
-  (let ((results (query-input `((experiment "Experiment name" "Pick and Place")
-                                (robot "Robot" "PR2")
-                                (creator "Creator" "IAI")))))
+  (let ((results (query-input `((:experiment "Experiment name" "Pick and Place")
+                                (:robot "Robot" "PR2")
+                                (:creator "Creator" "IAI")))))
     (dolist (result results)
       (set-metadata (car result) (cdr result)))))
 

@@ -33,10 +33,9 @@
  (:nicknames :beliefstate)
  (:use
   #:common-lisp
-  #:cram-roslisp-common
+  #:cram-transforms-stamped
   #:cut
   #:desig
-  #:designators-ros
   #:roslisp)
   (:export
    ;; Functions

@@ -31,12 +31,16 @@
   :description "CRAM Belief State Interface"
 
   :depends-on (;; Functionality
-               cram-roslisp-common
+               roslisp-utilities
                cram-utilities
-               designators
-               designators-ros
+               cram-designators
                cram-language
-               
+               cram-transforms-stamped
+               cl-transforms
+               cl-transforms-stamped
+               cram-plan-failures
+               roslisp
+
                ;; Communication
                actionlib
                std_msgs-msg

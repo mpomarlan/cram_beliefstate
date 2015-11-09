@@ -48,10 +48,10 @@
   (let ((id (beliefstate:start-node "OPEN-GRIPPER" `() 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
-      `((side ,side)
-        (max-effort ,max-effort)
-        (position ,position)))
+      :action
+      `((:side ,side)
+        (:max-effort ,max-effort)
+        (:position ,position)))
      id :annotation "gripper-command-details")
     (beliefstate:stop-node id)))
 
@@ -59,28 +59,28 @@
   (let ((id (beliefstate:start-node "CLOSE-GRIPPER" `() 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
-      `((side ,side)
-        (max-effort ,max-effort)
-        (position ,position)))
+      :action
+      `((:side ,side)
+        (:max-effort ,max-effort)
+        (:position ,position)))
      id :annotation "gripper-command-details")
     (beliefstate:stop-node id)))
 
 (def-logging-hook cram-language::on-invert-decision-tree (target-result features)
-  (let ((result (alter-node `((features ,features)
-                              (target-result ,target-result))
+  (let ((result (alter-node `((:features ,features)
+                              (:target-result ,target-result))
                             :mode :service
                             :command "invert-decision-tree")))
     result))
 
 (def-logging-hook cram-language::on-annotate-parameters (parameters)
   (add-designator-to-active-node
-   (make-designator 'object `(,parameters))
+   (make-designator :object `(,parameters))
    :annotation "parameter-annotation"))
 
 (def-logging-hook cram-language::on-predict (active-parameters requested-features)
-  (let ((result (alter-node `((active-features ,active-parameters)
-                              (requested-features ,requested-features))
+  (let ((result (alter-node `((:active-features ,active-parameters)
+                              (:requested-features ,requested-features))
                             :mode :service
                             :command "predict"))
         (result-hash-table (make-hash-table)))
@@ -88,10 +88,10 @@
       (loop for item in (description (first result))
             do (destructuring-bind (label value) item
                  (let ((interned-label (intern (symbol-name label)
-                                               'desig-props)))
+                                               'keyword)))
                    (setf
                     (gethash interned-label result-hash-table)
-                    (cond ((eql interned-label 'desig-props::failures)
+                    (cond ((eql interned-label :failures)
                            (cond ((listp value)
                                   (let ((fail-hash (make-hash-table)))
                                     (loop for item in value
@@ -109,17 +109,17 @@
 
 (def-logging-hook cram-language::on-load-model (file)
   "Load model for prediction."
-  (alter-node `((command "load-model")
-                (type "task-tree")
-                (file ,(string file)))
+  (alter-node `((:command "load-model")
+                (:type "task-tree")
+                (:file ,(string file)))
               :mode :service
               :command "load-model"))
 
 (def-logging-hook cram-language::on-load-decision-tree (file)
   "Load decision tree for prediction."
-  (alter-node `((command "load-model")
-                (type "decision-tree")
-                (file ,(string file)))
+  (alter-node `((:command "load-model")
+                (:type "decision-tree")
+                (:file ,(string file)))
               :mode :service
               :command "load-model"))
 
@@ -154,9 +154,9 @@
   (let ((id (beliefstate:start-node
              "PERFORM-ACTION-DESIGNATOR"
              (list
-              (list 'description
+              (list :description
                     (desig:description designator))
-              (list 'matching-process-modules
+              (list :matching-process-modules
                     matching-process-modules))
              2)))
     (beliefstate:add-designator-to-node designator id)
@@ -200,16 +200,16 @@
                           log-pattern)))
            (description
              (append
-              (when name `((name ,name)))
-              (when pattern `((pattern ,(map 'vector #'identity pattern))))
+              (when name `((:name ,name)))
+              (when pattern `((:pattern ,(map 'vector #'identity pattern))))
               (when bound-parameters
-                `((parameters ,(map 'vector #'identity bound-parameters))))
+                `((:parameters ,(map 'vector #'identity bound-parameters))))
               (when body-code
-                `((body-code ,(map 'vector #'identity body-code)))))))
+                `((:body-code ,(map 'vector #'identity body-code)))))))
       (when description
         (beliefstate:add-designator-to-node
          (make-designator
-          'action
+          :action
           description)
          id :annotation "task-details")))
     id))
@@ -228,11 +228,11 @@
   (let ((name (slot-value task 'cpl-impl:name)))
     (let ((id (beliefstate:start-node "TAG" `() 2)))
       (beliefstate::annotate-parameter
-       'tagName (write-to-string name))
+       :tagName (write-to-string name))
       (beliefstate:add-designator-to-node
        (make-designator
-        'cram-designators:action
-        `((name ,name)))
+        :action
+        `((:name ,name)))
        id :annotation "tag-details")
       id)))
 
@@ -245,8 +245,8 @@
              `() 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
-      `((goal-pose ,pose-stamped)))
+      :action
+      `((:goal-pose ,pose-stamped)))
      id :annotation "voluntary-movement-details")
     id))
 
@@ -263,19 +263,18 @@
     id))
 
 (def-logging-hook cram-language::on-grasp-decisions-complete (log-id grasp-description)
-  (let ((grasp (find 'desig-props::grasp
+  (let ((grasp (find :grasp
                      grasp-description :test (lambda (x y)
                                                (eql x (car y))))))
     (when grasp
-      (let ((arm (find 'arm
+      (let ((arm (find :arm
                        (second grasp)
                        :test (lambda (x y)
                                (string= (symbol-name x) (symbol-name (car y)))))))
         (when arm
-          (annotate-parameter 'arm (second arm))))))
+          (annotate-parameter :arm (second arm))))))
   (beliefstate:add-designator-to-node
-   (make-designator 'cram-designators:action
-                    grasp-description)
+   (make-designator :action grasp-description)
    log-id :annotation "grasp-details"))
 
 (def-logging-hook cram-language::on-finish-grasp (log-id success)
@@ -307,12 +306,12 @@
            `() 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
-      `((link ,side)
-        (goal-pose ,pose-stamped)
-        (planning-group ,planning-group)
-        (ignore-collisions ,(cond (ignore-collisions 1)
-                                  (t 0)))))
+      :action
+      `((:link ,side)
+        (:goal-pose ,pose-stamped)
+        (:planning-group ,planning-group)
+        (:ignore-collisions ,(cond (ignore-collisions 1)
+                                   (t 0)))))
      log-id
      :annotation "voluntary-movement-details")
     log-id))
@@ -324,8 +323,8 @@
   (let ((id (beliefstate:start-node "MOTION-PLANNING" `() 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
-      `((link-name ,link-name)))
+      :action
+      `((:link-name ,link-name)))
      id :annotation "motion-planning-details")
     id))
 
@@ -359,13 +358,13 @@
 
 (def-logging-hook cram-language::on-with-failure-handling-begin (clauses)
   (let ((id (beliefstate:start-node "WITH-FAILURE-HANDLING" (mapcar (lambda (clause)
-                                                                      `(clause ,clause))
+                                                                      `(:clause ,clause))
                                                                     clauses) 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
+      :action
       (mapcar (lambda (clause)
-                `(clause ,clause))
+                `(:clause ,clause))
               clauses))
      id :annotation "with-failure-handling-clauses")
     id))
@@ -383,9 +382,9 @@
   (let ((id (beliefstate:start-node "WITH-POLICY" (append `(policy ,name) parameters) 2)))
     (beliefstate:add-designator-to-node
      (make-designator
-      'cram-designators:action
-      `((name ,name)
-        (parameters ,parameters)))
+      :action
+      `((:name ,name)
+        (:parameters ,parameters)))
      id :annotation "with-policy-details")))
 
 (def-logging-hook cram-language::on-with-policy-end (id success)
@@ -404,7 +403,7 @@
        ;; TODO(winkler): Properly log the query and bindings information
        ;; of the prolog operation.
        (make-designator
-        'cram-designators:action
+        :action
         `())
        id :annotation "prolog-details"))))
 
@@ -416,83 +415,92 @@
   (when object
     (let ((newest (newest-effective-designator object)))
       (when newest
-        (let* ((at (desig-prop-value newest 'desig-props::at))
-               (pose (desig-prop-value at 'desig-props::pose))
-               (object-type (desig-prop-value newest 'desig-props::type)))
+        (let* ((at (desig-prop-value newest :at))
+               (pose (desig-prop-value at :pose))
+               (object-type (desig-prop-value newest :type)))
           (when pose
             (let* ((robot-pose-map
-                     (cl-tf2:ensure-pose-stamped-transformed
-                      *tf2* (tf:make-pose-stamped
-                             "base_footprint" 0.0
-                             (tf:make-identity-vector)
-                             (tf:make-identity-rotation))
-                      "map"))
+                     (cl-transforms-stamped:transform-pose-stamped
+                      *transformer*
+                      :target-frame *fixed-frame*
+                      :pose (cl-transforms-stamped:make-pose-stamped
+                             *robot-base-frame* 0.0
+                             (cl-transforms:make-identity-vector)
+                             (cl-transforms:make-identity-rotation))
+                      :timeout *tf-default-timeout*))
                    (object-pose-map
-                     (cl-tf2:ensure-pose-stamped-transformed
-                      *tf2* pose "map"))
+                     (cl-transforms-stamped:transform-pose-stamped
+                      *transformer*
+                      :target-frame *fixed-frame*
+                      :pose pose
+                      :timeout *tf-default-timeout*))
                    (distance-2d
-                     (tf:v-dist (tf:make-3d-vector
-                                 (tf:x (tf:origin robot-pose-map))
-                                 (tf:y (tf:origin robot-pose-map))
-                                 0.0)
-                                (tf:make-3d-vector
-                                 (tf:x (tf:origin object-pose-map))
-                                 (tf:y (tf:origin object-pose-map))
-                                 0.0)))
+                     (cl-transforms:v-dist
+                      (cl-transforms:make-3d-vector
+                       (cl-transforms:x (cl-transforms:origin robot-pose-map))
+                       (cl-transforms:y (cl-transforms:origin robot-pose-map))
+                       0.0)
+                      (cl-transforms:make-3d-vector
+                       (cl-transforms:x (cl-transforms:origin object-pose-map))
+                       (cl-transforms:y (cl-transforms:origin object-pose-map))
+                       0.0)))
                    (angle-difference
-                     (tf:angle-between-quaternions
-                      (tf:orientation robot-pose-map)
-                      (tf:orientation object-pose-map))))
-              (annotate-parameter 'object-type object-type)
-              (annotate-parameter 'distance-2d
-                                  distance-2d)
-              (annotate-parameter 'angle-difference-2d
-                                  angle-difference))))))))
+                     (cl-transforms:angle-between-quaternions
+                      (cl-transforms:orientation robot-pose-map)
+                      (cl-transforms:orientation object-pose-map))))
+              (annotate-parameter :object-type object-type)
+              (annotate-parameter :distance-2d distance-2d)
+              (annotate-parameter :angle-difference-2d angle-difference))))))))
 
 (def-logging-hook cram-language::on-performing-object-putdown (object pose)
   (when object
     (let ((newest (newest-effective-designator object)))
       (when newest
-        (let ((object-type (desig-prop-value
-                            object 'desig-props::type)))
+        (let ((object-type (desig-prop-value object :type)))
           (when pose
             (let* ((robot-pose-map
-                     (cl-tf2:ensure-pose-stamped-transformed
-                      *tf2* (tf:make-pose-stamped
-                             "base_footprint" 0.0
-                             (tf:make-identity-vector)
-                             (tf:make-identity-rotation))
-                      "map"))
+                     (cl-transforms-stamped:transform-pose-stamped
+                      *transformer*
+                      :target-frame *fixed-frame*
+                      :pose (cl-transforms-stamped:make-pose-stamped
+                             *robot-base-frame* 0.0
+                             (cl-transforms:make-identity-vector)
+                             (cl-transforms:make-identity-rotation))
+                      :timeout *tf-default-timeout*))
                    (putdown-pose-map
-                     (cl-tf2:ensure-pose-stamped-transformed
-                      *tf2* pose "map"))
+                     (cl-transforms-stamped:transform-pose-stamped
+                      *transformer*
+                      :target-frame *fixed-frame*
+                      :pose pose
+                      :timeout *tf-default-timeout*))
                    (distance-2d
-                     (tf:v-dist (tf:make-3d-vector
-                                 (tf:x (tf:origin robot-pose-map))
-                                 (tf:y (tf:origin robot-pose-map))
-                                 0.0)
-                                (tf:make-3d-vector
-                                 (tf:x (tf:origin putdown-pose-map))
-                                 (tf:y (tf:origin putdown-pose-map))
-                                 0.0)))
+                     (cl-transforms:v-dist
+                      (cl-transforms:make-3d-vector
+                       (cl-transforms:x (cl-transforms:origin robot-pose-map))
+                       (cl-transforms:y (cl-transforms:origin robot-pose-map))
+                       0.0)
+                      (cl-transforms:make-3d-vector
+                       (cl-transforms:x (cl-transforms:origin putdown-pose-map))
+                       (cl-transforms:y (cl-transforms:origin putdown-pose-map))
+                       0.0)))
                    (angle-difference
-                     (tf:angle-between-quaternions
-                      (tf:orientation robot-pose-map)
-                      (tf:orientation putdown-pose-map))))
-              (annotate-parameter 'object-type object-type)
-              (annotate-parameter 'distance-2d distance-2d)
-              (annotate-parameter 'angle-difference-2d angle-difference))))))))
+                     (cl-transforms:angle-between-quaternions
+                      (cl-transforms:orientation robot-pose-map)
+                      (cl-transforms:orientation putdown-pose-map))))
+              (annotate-parameter :object-type object-type)
+              (annotate-parameter :distance-2d distance-2d)
+              (annotate-parameter :angle-difference-2d angle-difference))))))))
 
 (def-logging-hook cram-language::on-begin-speech-act (sender receiver content in-reply-to)
   (let ((id (start-node "SPEECH-ACT")))
     (add-designator-to-node
-     (make-designator 'action
+     (make-designator :action
                       (append
-                       `((sender ,sender)
-                         (receiver ,receiver)
-                         (content ,content))
+                       `((:sender ,sender)
+                         (:receiver ,receiver)
+                         (:content ,content))
                        (when in-reply-to
-                         `((in-reply-to ,in-reply-to)))))
+                         `((:in-reply-to ,in-reply-to)))))
      id :annotation "speech-act-details")))
 
 (def-logging-hook cram-language::on-finish-speech-act (id)
@@ -501,7 +509,7 @@
 (def-logging-hook cram-language::on-with-container-open-begin (container-name)
   (let ((id (start-node "WITH-CONTAINER-OPEN")))
     (add-designator-to-node
-     (make-designator 'action `((name ,container-name))) id
+     (make-designator :action `((:name ,container-name))) id
      :annotation "container-details")
     id))
 

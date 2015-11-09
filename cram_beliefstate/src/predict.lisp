@@ -31,7 +31,7 @@
 
 (defun annotate-parameters (parameters &key namespace)
   (add-designator-to-active-node
-   (make-designator 'object `(,parameters))
+   (make-designator :object `(,parameters))
    :annotation "parameter-annotation"
    :property-namespace namespace))
 
@@ -42,13 +42,13 @@
   "Predict the outcome of the current branch."
   (designator-integration-lisp:call-designator-service
    "/beliefstate_ros/predict"
-   (make-designator 'action parameters)))
+   (make-designator :action parameters)))
 
 (defun call-predict (features-hashes)
   (let ((features (loop for h being the hash-keys of features-hashes
                         collect `(,h ,(gethash h features-hashes)))))
     (let* ((prediction (first (predict features)))
-           (failures-returned (desig-prop-value prediction 'desig-props::failures)))
+           (failures-returned (desig-prop-value prediction :failures)))
       (cond ((listp failures-returned)
              (mapcar (lambda (failure-returned)
                        `(,(intern (symbol-name
