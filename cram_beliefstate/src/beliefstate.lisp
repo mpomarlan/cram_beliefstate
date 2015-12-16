@@ -276,23 +276,15 @@
                           (sb-kernel:get-lisp-obj-address designator)))
          (description (description designator))
          (result (alter-node
-<<<<<<< HEAD
-                  (list (list :command :add-designator)
-                        (list :type type)
-                        (list :annotation annotation)
-                        (list :memory-address memory-address)
-                        (list :description description))
-=======
                   (remove-if-not
                    #'identity
-                   (list (list 'command 'add-designator)
-                         (list 'type type)
-                         (list 'annotation annotation)
-                         (list 'memory-address memory-address)
-                         (list 'description description)
+                   (list (list :command :add-designator)
+                         (list :type type)
+                         (list :annotation annotation)
+                         (list :memory-address memory-address)
+                         (list :description description)
                          (when relative-context-id
-                           (list '_relative_context_id relative-context-id))))
->>>>>>> 06dd1be... Making sure designators and human end up in correct context when using relatie-context-id with concurrent logging.
+                           (list :_relative_context_id relative-context-id))))
                   :node-id node-id)))
     (when result
       (let* ((desig-id (desig-prop-value (first result) :id)))
@@ -402,12 +394,14 @@
                                 (:robot "Robot" "PR2")
                                 (:creator "Creator" "IAI")))))
     (dolist (result results)
-      (set-metadata (car result) (cdr result)))))
+      (set-metadata (intern (string-upcase (car result)) :keyword)
+                    (cdr result)))))
 
 (defun end-experiment ()
   (let ((results (query-input `((:description "Description")))))
     (dolist (result results)
-      (set-metadata (car result) (cdr result))))
+      (set-metadata (intern (string-upcase (car result)) :keyword)
+                    (cdr result))))
   (let ((results (query-input `((:identifier "Identifier" "pick-and-place")))))
     (extract-files :name (find :identifier results :test (lambda (x y)
                                                            (eql x (car y)))))))
