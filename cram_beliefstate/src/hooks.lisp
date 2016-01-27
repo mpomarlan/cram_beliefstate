@@ -432,7 +432,8 @@
                      (cl-transforms-stamped:transform-pose-stamped
                       *transformer*
                       :target-frame *fixed-frame*
-                      :pose pose
+                      :pose (cl-transforms-stamped:ensure-pose-stamped
+                             pose *fixed-frame* 0.0)
                       :timeout *tf-default-timeout*))
                    (distance-2d
                      (cl-transforms:v-dist

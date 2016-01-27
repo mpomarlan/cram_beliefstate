@@ -267,7 +267,7 @@
            (list :condition datum-str)))))
 
 (defun add-designator-to-node (designator node-id &key (annotation "") (relative-context-id))
-  (let* ((type (ecase (type-of designator)
+  (let* ((type (etypecase designator
                  (cram-designators:action-designator "ACTION")
                  (cram-designators:location-designator "LOCATION")
                  (cram-designators:human-designator "HUMAN")
@@ -319,7 +319,7 @@
 
 (defun add-designator-to-active-node (designator &key (annotation "")
                                                    property-namespace)
-  (let* ((type (ecase (type-of designator)
+  (let* ((type (etypecase designator
                  (cram-designators:action-designator "ACTION")
                  (cram-designators:location-designator "LOCATION")
                  (cram-designators:human-designator "HUMAN")
@@ -353,13 +353,13 @@
          (mem-addr-parent (write-to-string
                            (sb-kernel:get-lisp-obj-address desig-parent)))
          (desc-child (description desig-child))
-         (type-child (ecase (type-of desig-child)
+         (type-child (etypecase desig-child
                        (cram-designators:action-designator "ACTION")
                        (cram-designators:location-designator "LOCATION")
                        (cram-designators:human-designator "HUMAN")
                        (cram-designators:object-designator "OBJECT")))
          (desc-parent (description desig-parent))
-         (type-parent (ecase (type-of desig-parent)
+         (type-parent (etypecase desig-parent
                         (cram-designators:action-designator "ACTION")
                         (cram-designators:location-designator "LOCATION")
                         (cram-designators:human-designator "HUMAN")
