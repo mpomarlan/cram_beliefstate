@@ -248,11 +248,12 @@
   (alter-node (list (list :command :rethrow-failure)
                     (list :context-id id))))
 
-(defun set-experiment-meta-data (field value)
+(defun set-experiment-meta-data (field value &optional (type "property"))
   (alter-node
    `((:command :set-experiment-meta-data)
      (:field ,field)
-     (:value ,value))))
+     (:value ,value)
+     (:type ,type))))
 
 (defun add-topic-image-to-active-node (image-topic)
   (alter-node
