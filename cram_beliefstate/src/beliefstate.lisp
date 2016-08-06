@@ -374,7 +374,15 @@
        (:type-parent ,type-parent)
        (:description-parent ,desc-parent)))))
 
+(defun set-semantic-map-name ()
+  (when (and (find-package 'sem-map-utils)
+             sem-map-utils::*cached-semantic-map-name*)
+    (set-experiment-meta-data
+     "performedInMap" sem-map-utils::*cached-semantic-map-name*
+     "resource")))
+
 (defun extract-files (&key (name "cram_log") detail-level)
+  (set-semantic-map-name)
   (extract-meta-file)
   (unless detail-level
     (let ((owl-name (concatenate 'string name ".owl"))
