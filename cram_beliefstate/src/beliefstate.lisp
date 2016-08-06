@@ -248,12 +248,15 @@
   (alter-node (list (list :command :rethrow-failure)
                     (list :context-id id))))
 
-(defun set-experiment-meta-data (field value &optional (type "property"))
+(defun set-experiment-meta-data (field value &optional (type :property))
+  (assert (or (eql type :property) (eql type :resource)))
   (alter-node
    `((:command :set-experiment-meta-data)
      (:field ,field)
      (:value ,value)
-     (:type ,type))))
+     (:type ,(case type
+               (:property "property")
+               (:resource "resource"))))))
 
 (defun add-topic-image-to-active-node (image-topic)
   (alter-node
@@ -379,7 +382,7 @@
              sem-map-utils::*cached-semantic-map-name*)
     (set-experiment-meta-data
      "performedInMap" sem-map-utils::*cached-semantic-map-name*
-     "resource")))
+     :resource)))
 
 (defun extract-files (&key (name "cram_log") detail-level)
   (set-semantic-map-name)
