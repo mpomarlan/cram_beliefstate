@@ -36,6 +36,7 @@
                cram-designators
                cram-language
                cram-tf
+               cram-semantic-map-utils
                cl-transforms
                cl-transforms-stamped
                cram-plan-failures
