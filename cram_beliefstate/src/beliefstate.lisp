@@ -380,10 +380,11 @@
 (defun get-package-symbol-value (package search-name)
   (let ((package (find-package package))
         (search-name (string-upcase search-name)))
-    (do-symbols (sym package)
-      (when (and (boundp sym) (equal (symbol-name sym) search-name))
-        (return-from get-package-symbol-value
-          (symbol-value sym))))))
+    (when package
+      (do-symbols (sym package)
+        (when (and (boundp sym) (equal (symbol-name sym) search-name))
+          (return-from get-package-symbol-value
+            (symbol-value sym)))))))
 
 (defun set-semantic-map-name ()
   (let ((name (get-package-symbol-value
