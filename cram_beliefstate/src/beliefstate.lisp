@@ -275,7 +275,8 @@
                  (cram-designators:action-designator "ACTION")
                  (cram-designators:location-designator "LOCATION")
                  (cram-designators:human-designator "HUMAN")
-                 (cram-designators:object-designator "OBJECT")))
+                 (cram-designators:object-designator "OBJECT")
+                 (cram-designators:designator "DESIGNATOR")))
          (memory-address (write-to-string
                           (sb-kernel:get-lisp-obj-address designator)))
          (description (description designator))
@@ -327,7 +328,8 @@
                  (cram-designators:action-designator "ACTION")
                  (cram-designators:location-designator "LOCATION")
                  (cram-designators:human-designator "HUMAN")
-                 (cram-designators:object-designator "OBJECT")))
+                 (cram-designators:object-designator "OBJECT")
+                 (cram-designators:designator "DESIGNATOR")))
          (memory-address (write-to-string
                           (sb-kernel:get-lisp-obj-address designator)))
          (description (description designator))
@@ -361,13 +363,15 @@
                        (cram-designators:action-designator "ACTION")
                        (cram-designators:location-designator "LOCATION")
                        (cram-designators:human-designator "HUMAN")
-                       (cram-designators:object-designator "OBJECT")))
+                       (cram-designators:object-designator "OBJECT")
+                       (cram-designators:designator "DESIGNATOR")))
          (desc-parent (description desig-parent))
          (type-parent (etypecase desig-parent
                         (cram-designators:action-designator "ACTION")
                         (cram-designators:location-designator "LOCATION")
                         (cram-designators:human-designator "HUMAN")
-                        (cram-designators:object-designator "OBJECT"))))
+                        (cram-designators:object-designator "OBJECT")
+                        (cram-designators:designator "DESIGNATOR"))))
     (alter-node
      `((:command :equate-designators)
        (:memory-address-child ,mem-addr-child)
