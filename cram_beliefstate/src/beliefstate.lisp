@@ -381,12 +381,20 @@
        (:type-parent ,type-parent)
        (:description-parent ,desc-parent)))))
 
+(defun get-package-symbol-value (package search-name)
+  (let ((package (find-package package))
+        (search-name (string-upcase search-name)))
+    (when package
+      (do-symbols (sym package)
+        (when (and (boundp sym) (equal (symbol-name sym) search-name))
+          (return-from get-package-symbol-value
+            (symbol-value sym)))))))
+
 (defun set-semantic-map-name ()
-  (when (and (find-package 'sem-map-utils)
-             sem-map-utils::*cached-semantic-map-name*)
-    (set-experiment-meta-data
-     "performedInMap" sem-map-utils::*cached-semantic-map-name*
-     :resource)))
+  (let ((name (get-package-symbol-value
+               'sem-map-utils "*cached-semantic-map-name*")))
+    (when name
+      (set-experiment-meta-data "performedInMap" name :resource))))
 
 (defun extract-files (&key (name "cram_log") detail-level)
   (set-semantic-map-name)
