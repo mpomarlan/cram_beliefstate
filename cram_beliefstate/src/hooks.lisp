@@ -401,6 +401,14 @@
 (def-logging-hook cram-utilities::on-finish-json-prolog-prove (id)
   (beliefstate:stop-node id))
 
+(def-logging-hook cram-utilities::on-json-prolog-query-next-solution-result (query-id result)
+  ;; TODO: Properly evaluate the `result` fields here; that variable includes all bindings as returned for the query identified by `query-id`.
+  )
+
+(def-logging-hook cram-utilities::on-json-prolog-query-finish (query-id)
+  ;; TODO: Signify the end of the query identified by `query-id`.
+  )
+
 (def-logging-hook cram-utilities::on-prepare-prolog-prove (query binds)
   (when *enable-prolog-logging*
     (let ((id (beliefstate:start-node "PROLOG" `() 3)))
