@@ -391,10 +391,15 @@
   (beliefstate:stop-node id :success success))
 
 (def-logging-hook cram-utilities::on-prepare-json-prolog-prove (request)
-  )
+  (let ((id (beliefstate:start-node "PROLOG-QUERY" `())))
+    (beliefstate:add-designator-to-node
+     (make-designator
+      :action
+      `((:request ,(write-to-string request))))
+     id :annotation "prolog-query-details")))
 
 (def-logging-hook cram-utilities::on-finish-json-prolog-prove (id)
-  )
+  (beliefstate:stop-node id))
 
 (def-logging-hook cram-utilities::on-prepare-prolog-prove (query binds)
   (when *enable-prolog-logging*
