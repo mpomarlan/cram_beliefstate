@@ -404,6 +404,17 @@
 (def-logging-hook cram-utilities::on-finish-json-prolog-prove (id)
   (beliefstate:stop-node id))
 
+(defun make-transferable (value)
+  (cond ((symbolp value)
+         (symbol-name value))
+        ((stringp value)
+         value)
+        ((numberp value)
+         value)
+        ((listp value)
+         (mapcar #'make-transferable value))
+        (t (write-to-string value))))
+
 (def-logging-hook cram-utilities::on-json-prolog-query-next-solution-result (query-id result)
   (atomic-node
    "JSON-PROLOG-NEXT-SOLUTION"
@@ -411,13 +422,7 @@
                 :action `((:query-id ,query-id)
                           (:result ,(mapcar (lambda (item)
                                               (destructuring-bind (symbol . value) item
-                                                `(,symbol ,(cond ((symbolp symbol)
-                                                                  (symbol-name value))
-                                                                 ((stringp value)
-                                                                  value)
-                                                                 ((numberp value)
-                                                                  value)
-                                                                 (t (write-to-string value))))))
+                                                `(,symbol ,(make-transferable value))))
                                             result))))
    :annotation "json-prolog-next-solution"))
 
