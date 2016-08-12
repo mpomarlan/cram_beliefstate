@@ -412,7 +412,7 @@
         ((numberp value)
          value)
         ((listp value)
-         (mapcar #'make-transferable value))
+         (map 'vector #'make-transferable value))
         (t (write-to-string value))))
 
 (def-logging-hook cram-utilities::on-json-prolog-query-next-solution-result (query-id result)
