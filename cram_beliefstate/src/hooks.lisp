@@ -395,19 +395,37 @@
     (beliefstate:add-designator-to-node
      (make-designator
       :action
-      `((:request ,(write-to-string request))))
+      (loop for item from 0 below (length request) by 2
+            as key = (elt request item)
+            as value = (elt request (+ item 1))
+            collect `(,key ,value)))
      id :annotation "prolog-query-details")))
 
 (def-logging-hook cram-utilities::on-finish-json-prolog-prove (id)
   (beliefstate:stop-node id))
 
 (def-logging-hook cram-utilities::on-json-prolog-query-next-solution-result (query-id result)
-  ;; TODO: Properly evaluate the `result` fields here; that variable includes all bindings as returned for the query identified by `query-id`.
-  )
+  (atomic-node
+   "JSON-PROLOG-NEXT-SOLUTION"
+   :designator (make-designator
+                :action `((:query-id ,query-id)
+                          (:result ,(mapcar (lambda (item)
+                                              (destructuring-bind (symbol . value) item
+                                                `(,symbol ,(cond ((symbolp symbol)
+                                                                  (symbol-name value))
+                                                                 ((stringp value)
+                                                                  value)
+                                                                 ((numberp value)
+                                                                  value)
+                                                                 (t (write-to-string value))))))
+                                            result))))
+   :annotation "json-prolog-next-solution"))
 
 (def-logging-hook cram-utilities::on-json-prolog-query-finish (query-id)
-  ;; TODO: Signify the end of the query identified by `query-id`.
-  )
+  (atomic-node
+   "JSON-PROLOG-FINISH"
+   :designator (make-designator :action `((:query-id ,query-id)))
+   :annotation "json-prolog-finish"))
 
 (def-logging-hook cram-utilities::on-prepare-prolog-prove (query binds)
   (when *enable-prolog-logging*
