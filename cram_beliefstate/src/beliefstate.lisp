@@ -112,6 +112,11 @@
          (fully-qualified-service-name "operate")
          (cram-designators:make-designator :action params))))))
 
+(defun atomic-node (name &key designator annotation)
+  (let ((id (start-node name nil)))
+    (add-designator-to-node designator id :annotation annotation)
+    (stop-node id)))
+
 (defun extract-dot-file (filename &key
                                     (successes t)
                                     (fails t)
