@@ -391,18 +391,20 @@
   (beliefstate:stop-node id :success success))
 
 (def-logging-hook cram-utilities::on-prepare-json-prolog-prove (request)
-  (let ((id (beliefstate:start-node "PROLOG-QUERY" `())))
-    (beliefstate:add-designator-to-node
-     (make-designator
-      :action
-      (loop for item from 0 below (length request) by 2
-            as key = (elt request item)
-            as value = (elt request (+ item 1))
-            collect `(,key ,value)))
-     id :annotation "prolog-query-details")))
+  (when *enable-prolog-logging*
+    (let ((id (beliefstate:start-node "PROLOG-QUERY" `())))
+      (beliefstate:add-designator-to-node
+       (make-designator
+        :action
+        (loop for item from 0 below (length request) by 2
+              as key = (elt request item)
+              as value = (elt request (+ item 1))
+              collect `(,key ,value)))
+       id :annotation "prolog-query-details"))))
 
 (def-logging-hook cram-utilities::on-finish-json-prolog-prove (id)
-  (beliefstate:stop-node id))
+  (when *enable-prolog-logging*
+    (beliefstate:stop-node id)))
 
 (defun make-transferable (value)
   (cond ((symbolp value)
@@ -416,21 +418,23 @@
         (t (write-to-string value))))
 
 (def-logging-hook cram-utilities::on-json-prolog-query-next-solution-result (query-id result)
-  (atomic-node
-   "JSON-PROLOG-NEXT-SOLUTION"
-   :designator (make-designator
-                :action `((:query-id ,query-id)
-                          (:result ,(mapcar (lambda (item)
-                                              (destructuring-bind (symbol . value) item
-                                                `(,symbol ,(make-transferable value))))
-                                            result))))
-   :annotation "json-prolog-next-solution"))
+  (when *enable-prolog-logging*
+    (atomic-node
+     "JSON-PROLOG-NEXT-SOLUTION"
+     :designator (make-designator
+                  :action `((:query-id ,query-id)
+                            (:result ,(mapcar (lambda (item)
+                                                (destructuring-bind (symbol . value) item
+                                                  `(,symbol ,(make-transferable value))))
+                                              result))))
+     :annotation "json-prolog-next-solution")))
 
 (def-logging-hook cram-utilities::on-json-prolog-query-finish (query-id)
-  (atomic-node
-   "JSON-PROLOG-FINISH"
-   :designator (make-designator :action `((:query-id ,query-id)))
-   :annotation "json-prolog-finish"))
+  (when *enable-prolog-logging*
+    (atomic-node
+     "JSON-PROLOG-FINISH"
+     :designator (make-designator :action `((:query-id ,query-id)))
+     :annotation "json-prolog-finish")))
 
 (def-logging-hook cram-utilities::on-prepare-prolog-prove (query binds)
   (when *enable-prolog-logging*
