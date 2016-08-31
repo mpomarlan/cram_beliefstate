@@ -253,6 +253,15 @@
 (def-logging-hook cram-language::on-finish-move-head (id success)
   (beliefstate:stop-node id :success success))
 
+(def-logging-hook cram-language::on-begin-lowering-object (object-name)
+  (let ((id (beliefstate:start-node "LOWER-OBJECT" nil)))
+    (when object-name
+      (beliefstate::annotate-parameter "objectActedOn" object-name))
+    id))
+
+(def-logging-hook cram-language::on-finish-lowering-object (id)
+  (beliefstate:stop-node id))
+
 (def-logging-hook cram-language::on-begin-grasp (obj-desig)
   (let ((id (beliefstate:start-node "GRASP" `() 2)))
     (beliefstate:add-topic-image-to-active-node
