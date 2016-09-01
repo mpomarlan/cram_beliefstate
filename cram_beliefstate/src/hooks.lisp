@@ -256,7 +256,7 @@
 (def-logging-hook cram-language::on-begin-lowering-object (object-name)
   (let ((id (beliefstate:start-node "LOWER-OBJECT" nil)))
     (when object-name
-      (beliefstate::annotate-parameter "objectActedOn" object-name))
+      (beliefstate::annotate-parameter :objectActedOn object-name))
     id))
 
 (def-logging-hook cram-language::on-finish-lowering-object (id)
