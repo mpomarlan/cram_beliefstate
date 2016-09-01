@@ -459,3 +459,14 @@
                     (list 'shortcut shortcut)
                     (list 'iri iri))
               :node-id relative-context-id))
+
+(defun annotate-resource (property-name uri &optional namespace)
+  (add-designator-to-active-node
+   (make-designator
+    :object
+    (append
+     `((property ,property-name)
+       (uri ,uri))
+     (when namespace
+       `((namespace ,namespace)))))
+   :annotation "resource-annotation"))
