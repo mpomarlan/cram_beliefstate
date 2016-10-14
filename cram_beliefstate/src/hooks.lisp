@@ -170,8 +170,7 @@
   (beliefstate:stop-node id))
 
 (def-logging-hook cram-language::on-with-designator (designator)
-  (beliefstate:add-designator-to-active-node
-   designator))
+  (beliefstate:add-designator-to-node designator (top-id)))
 
 (def-logging-hook cram-language::on-preparing-named-top-level (name)
   (let ((name (or name "ANONYMOUS-TOP-LEVEL")))
