@@ -36,12 +36,28 @@
 (defparameter *interactive-callback-subscriber* nil)
 (defparameter *registered-interactive-callbacks* nil)
 
+(defvar *id-stack* nil)
+
 (defgeneric alter-node (description &key node-id mode command))
 
 (defun init-semrec ()
   (setf *registered-interactive-callbacks* nil))
 
 (roslisp-utilities:register-ros-init-function init-semrec)
+
+(defun push-id (id)
+  (push id *id-stack*))
+
+(defun pop-id (&optional (id nil idp))
+  (cond (idp (let ((pos (position id *id-stack*)))
+               (cond ((and pos (< pos (length *id-stack*)))
+                      (setf *id-stack* (subseq *id-stack* (1+ pos))))
+                     (t (setf *id-stack* nil)))))
+        ((> (length *id-stack*) 0)
+         (setf *id-stack* (subseq *id-stack* 1)))))
+
+(defun top-id ()
+  (car *id-stack*))
 
 (defun change-planlogging-namespace(&key (namespace "semrec_ros") (use-roslisp-ns nil))
   (if use-roslisp-ns
@@ -93,7 +109,10 @@
                              (fully-qualified-service-name "operate")
                              (cram-designators:make-designator :action parameters)))))
         (when result
-          (desig-prop-value result :_id))))))
+          (let ((id (desig-prop-value result :_id)))
+            (when id
+              (push-id id))
+            id))))))
 
 (defun stop-node (id &key (success t) relative-context-id)
   (with-lock-held (*service-access*)
@@ -108,6 +127,8 @@
                                             (t 0))))
                 (when relative-context-id
                   (list (list :_relative_context_id relative-context-id)))))))
+        (when id
+          (pop-id id))
         (designator-integration-lisp:call-designator-service
          (fully-qualified-service-name "operate")
          (cram-designators:make-designator :action params))))))
