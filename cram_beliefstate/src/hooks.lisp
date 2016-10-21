@@ -408,7 +408,8 @@
               as key = (elt request item)
               as value = (elt request (+ item 1))
               collect `(,key ,value)))
-       id :annotation "prolog-query-details"))))
+       id :annotation "prolog-query-details")
+      id)))
 
 (def-logging-hook cram-utilities::on-finish-json-prolog-prove (id)
   (when *enable-prolog-logging*
