@@ -204,9 +204,9 @@
               (when bound-parameters
                 `((:parameters ,(map 'vector #'identity bound-parameters))))
               (when lambda-list
-                `((:signature ,lambda-list)))
+                `((:signature ,(map 'vector #'identity lambda-list))))
               (when parameters
-                `((:invocation ,parameters)))
+                `((:invocation ,(map 'vector #'identity parameters))))
               (when body-code
                 `((:body-code ,(map 'vector #'identity body-code)))))))
       (when description
