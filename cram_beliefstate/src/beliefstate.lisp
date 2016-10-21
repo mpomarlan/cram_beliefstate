@@ -89,6 +89,7 @@
   (setf *logging-enabled* (not *logging-enabled*)))
 
 (defun enable-logging (bool)
+  (roslisp:ros-info (semrec) "Enable logging: ~a~%" bool)
   (setf *logging-enabled* bool))
 
 (defun start-node (name &optional log-parameters (detail-level 2) log-id add-params)
@@ -110,8 +111,7 @@
                              (cram-designators:make-designator :action parameters)))))
         (when result
           (let ((id (desig-prop-value result :_id)))
-            (when id
-              (push-id id))
+            (when id (push-id id))
             id))))))
 
 (defun stop-node (id &key (success t) relative-context-id)
