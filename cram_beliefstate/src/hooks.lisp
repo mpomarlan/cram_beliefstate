@@ -179,7 +179,7 @@
 (def-logging-hook cram-language::on-finishing-named-top-level (id)
   (beliefstate:stop-node id))
 
-(def-logging-hook cram-language::on-preparing-task-execution (name log-parameters log-pattern)
+(def-logging-hook cram-language::on-preparing-task-execution (name log-parameters log-pattern lambda-list parameters)
   (let ((id (beliefstate:start-node name log-parameters 1)))
     (let* ((param-bindings
              (rest (assoc 'cram-language-implementation::parameters
@@ -203,6 +203,10 @@
               (when pattern `((:pattern ,(map 'vector #'identity pattern))))
               (when bound-parameters
                 `((:parameters ,(map 'vector #'identity bound-parameters))))
+              (when lambda-list
+                `((:signature ,lambda-list)))
+              (when parameters
+                `((:invocation ,parameters)))
               (when body-code
                 `((:body-code ,(map 'vector #'identity body-code)))))))
       (when description
