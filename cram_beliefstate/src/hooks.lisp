@@ -197,16 +197,19 @@
            (name
              (rest (assoc 'cram-language-implementation::name
                           log-pattern)))
+           (invocation-designator
+             (when (and lambda-list parameters)
+               (make-designator :action (mapcar (lambda (argument value)
+                                                  `(,argument ,value))
+                                                lambda-list parameters))))
            (description
              (append
               (when name `((:name ,name)))
               (when pattern `((:pattern ,(map 'vector #'identity pattern))))
               (when bound-parameters
                 `((:parameters ,(map 'vector #'identity bound-parameters))))
-              (when lambda-list
-                `((:signature ,(map 'vector #'identity lambda-list))))
-              (when parameters
-                `((:invocation ,(map 'vector #'identity parameters))))
+              (when invocation-designator
+                `((:invocation ,invocation-designator)))
               (when body-code
                 `((:body-code ,(map 'vector #'identity body-code)))))))
       (when description
@@ -450,7 +453,7 @@
      :annotation "json-prolog-finish")))
 
 (def-logging-hook cram-utilities::on-prepare-prolog-prove (query binds)
-  (when *enable-prolog-logging*
+  (when (and *enable-prolog-logging* nil)
     (let ((id (beliefstate:start-node "PROLOG" `() 3)))
       (beliefstate:add-designator-to-node
        ;; TODO(winkler): Properly log the query and bindings information
@@ -461,7 +464,7 @@
        id :annotation "prolog-details"))))
 
 (def-logging-hook cram-utilities::on-finish-prolog-prove (id success)
-  (when *enable-prolog-logging*
+  (when (and *enable-prolog-logging* nil)
     (beliefstate:stop-node id :success success)))
 
 (def-logging-hook cram-language::on-performing-object-grasp (object)
