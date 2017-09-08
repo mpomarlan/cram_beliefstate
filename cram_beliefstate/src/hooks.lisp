@@ -99,7 +99,7 @@
                                                (setf (gethash
                                                       (intern
                                                        (symbol-name fail)
-                                                       'cram-plan-failures)
+                                                       'cram-common-failures)
                                                       fail-hash)
                                                      val)))
                                     fail-hash))

@@ -53,7 +53,7 @@
              (mapcar (lambda (failure-returned)
                        `(,(intern (symbol-name
                                    (car failure-returned))
-                                  'cram-plan-failures)
+                                  'cram-common-failures)
                          ,(cdr failure-returned)))
                      failures-returned))
             (t nil)))))

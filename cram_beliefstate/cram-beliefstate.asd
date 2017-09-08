@@ -38,7 +38,7 @@
                cram-tf
                cl-transforms
                cl-transforms-stamped
-               cram-plan-failures
+               cram-common-failures
                roslisp
 
                ;; Communication
